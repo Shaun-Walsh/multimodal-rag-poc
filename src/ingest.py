@@ -75,7 +75,7 @@ def ingest_document(file_path: str) -> int:
         points.append(
             models.PointStruct(
                 id=page_id,
-                vectors={"colpali": emb.tolist()},
+                vector={"colpali": emb.tolist()},
                 payload={
                     "doc_id": doc_id,
                     "filename": filename,

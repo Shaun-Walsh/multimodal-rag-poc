@@ -1,20 +1,38 @@
 import base64
 import io
 
+from PIL import Image
 from openai import OpenAI
 
 from src.config import QWEN3_VL_MODEL_NAME, VLLM_BASE_URL
 
+MAX_GENERATION_EDGE = 768
+JPEG_QUALITY = 75
+
+
+def _resize_for_generation(img: Image.Image, max_edge: int = MAX_GENERATION_EDGE) -> Image.Image:
+    w, h = img.size
+    if max(w, h) <= max_edge:
+        return img
+    scale = max_edge / max(w, h)
+    return img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
+
 
 def _page_image_to_data_uri(page: dict) -> str:
     if page.get("image"):
+        img = _resize_for_generation(page["image"])
         buf = io.BytesIO()
-        page["image"].save(buf, format="JPEG", quality=85)
+        img.save(buf, format="JPEG", quality=JPEG_QUALITY)
         b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
         return f"data:image/jpeg;base64,{b64}"
 
     if page.get("image_b64"):
-        return f"data:image/jpeg;base64,{page['image_b64']}"
+        raw = base64.b64decode(page["image_b64"])
+        img = _resize_for_generation(Image.open(io.BytesIO(raw)))
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=JPEG_QUALITY)
+        b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+        return f"data:image/jpeg;base64,{b64}"
 
     return ""
 

@@ -1,10 +1,12 @@
+import os
+
 import torch
 from functools import lru_cache
 
 COLQWEN2_MODEL_NAME = "vidore/colqwen2-v1.0"
 QDRANT_COLLECTION_NAME = "colpali"
 EMBEDDING_DIM = 128
-VLLM_BASE_URL = "http://localhost:8000/v1"
+VLLM_BASE_URL = os.environ.get("VLLM_BASE_URL", "http://localhost:8000/v1")
 QWEN3_VL_MODEL_NAME = "Qwen/Qwen3-VL-8B-Instruct"
 DEFAULT_TOP_K = 5
 SUPPORTED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg"}
