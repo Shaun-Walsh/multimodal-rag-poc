@@ -1,0 +1,26 @@
+{
+  "description": "Evaluation dataset for retrieval quality measurement. Populate expected_doc and expected_page with your test corpus.",
+  "target_recall_at_5": 0.80,
+  "queries": [
+    {"query": "What is the main conclusion of the report?", "expected_doc": "sample_report.pdf", "expected_page": 1},
+    {"query": "What are the quarterly revenue figures?", "expected_doc": "sample_report.pdf", "expected_page": 2},
+    {"query": "Show me the organizational chart", "expected_doc": "sample_report.pdf", "expected_page": 3},
+    {"query": "What is the budget breakdown?", "expected_doc": "sample_report.pdf", "expected_page": 4},
+    {"query": "What are the key performance indicators?", "expected_doc": "sample_report.pdf", "expected_page": 5},
+    {"query": "What is the project timeline?", "expected_doc": "sample_report.pdf", "expected_page": 6},
+    {"query": "Who are the team members listed?", "expected_doc": "sample_report.pdf", "expected_page": 7},
+    {"query": "What are the risk factors?", "expected_doc": "sample_report.pdf", "expected_page": 8},
+    {"query": "What is the marketing strategy?", "expected_doc": "sample_report.pdf", "expected_page": 9},
+    {"query": "What are the next steps?", "expected_doc": "sample_report.pdf", "expected_page": 10},
+    {"query": "Show me the sales chart", "expected_doc": "slides.pdf", "expected_page": 1},
+    {"query": "What is the product roadmap?", "expected_doc": "slides.pdf", "expected_page": 2},
+    {"query": "What are the customer demographics?", "expected_doc": "slides.pdf", "expected_page": 3},
+    {"query": "What is the competitive analysis?", "expected_doc": "slides.pdf", "expected_page": 4},
+    {"query": "What are the growth projections?", "expected_doc": "slides.pdf", "expected_page": 5},
+    {"query": "What is the pricing model?", "expected_doc": "slides.pdf", "expected_page": 6},
+    {"query": "What are the partnership opportunities?", "expected_doc": "slides.pdf", "expected_page": 7},
+    {"query": "What is the go-to-market strategy?", "expected_doc": "slides.pdf", "expected_page": 8},
+    {"query": "What are the technical requirements?", "expected_doc": "slides.pdf", "expected_page": 9},
+    {"query": "What is the implementation plan?", "expected_doc": "slides.pdf", "expected_page": 10}
+  ]
+}
