@@ -13,6 +13,20 @@ from src.config import (
 )
 
 
+def build_contextualized_query(query: str, history: list[dict]) -> str:
+    """Prepend up to the last 2 user messages from history to the current query.
+
+    This gives the retrieval embedding richer context when the user asks
+    follow-up questions that rely on earlier turns (e.g. "Compare to Q2"
+    after discussing Q3 revenue).
+    """
+    prior_user_msgs = [m["content"] for m in history if m.get("role") == "user"]
+    if not prior_user_msgs:
+        return query
+    recent = prior_user_msgs[-2:]  # last 2 user messages
+    return " | ".join(recent + [query])
+
+
 def embed_query(query: str) -> np.ndarray:
     model, processor = get_model()
     batch = processor.process_queries([query])

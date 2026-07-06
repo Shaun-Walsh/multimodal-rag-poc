@@ -15,6 +15,7 @@ from src.config import (
     get_model,
     get_qdrant_client,
 )
+from src.library import register_document
 
 DPI_SCALE = 300 / 72
 
@@ -86,4 +87,5 @@ def ingest_document(file_path: str) -> int:
         )
 
     client.upsert(collection_name=QDRANT_COLLECTION_NAME, points=points)
+    register_document(doc_id, filename, len(points))
     return len(points)

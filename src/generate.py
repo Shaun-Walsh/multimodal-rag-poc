@@ -37,38 +37,49 @@ def _page_image_to_data_uri(page: dict) -> str:
     return ""
 
 
-def generate_answer(query: str, pages: list[dict]) -> str:
+def generate_answer(query: str, pages: list[dict], history: list[dict] | None = None) -> str:
     client = OpenAI(api_key="EMPTY", base_url=VLLM_BASE_URL)
 
     content = []
-    for page in pages:
+    for i, page in enumerate(pages):
+        citation_num = i + 1
         data_uri = _page_image_to_data_uri(page)
         if data_uri:
+            content.append(
+                {"type": "text", "text": f"Source [{citation_num}]: {page['filename']} page {page['page_number']}"}
+            )
             content.append(
                 {"type": "image_url", "image_url": {"url": data_uri}}
             )
 
-    source_refs = ", ".join(
-        f"{p['filename']} p.{p['page_number']}" for p in pages
-    )
     content.append(
         {
             "type": "text",
             "text": (
-                f"Based on the document pages shown above, answer the "
-                f"following question. Ground your answer in the visible "
-                f"content of these pages. If the pages do not contain "
-                f"enough information to answer, say so.\n\n"
-                f"Question: {query}\n\n"
-                f"Source pages: {source_refs}"
+                f"Based on the numbered source pages shown above, answer "
+                f"the following question. Ground your answer in the visible "
+                f"content of these pages. Cite your sources using numbered "
+                f"markers like [1], [2] when referencing information from "
+                f"the source pages. Only cite sources you actually use. "
+                f"If the pages do not contain enough information to answer, "
+                f"say so.\n\n"
+                f"Question: {query}"
             ),
         }
     )
 
+    messages = []
+    if history:
+        # Bound to last 10 exchanges (20 messages)
+        trimmed = history[-20:]
+        for entry in trimmed:
+            messages.append({"role": entry["role"], "content": entry["content"]})
+    messages.append({"role": "user", "content": content})
+
     try:
         response = client.chat.completions.create(
             model=QWEN3_VL_MODEL_NAME,
-            messages=[{"role": "user", "content": content}],
+            messages=messages,
             max_tokens=1024,
         )
         return response.choices[0].message.content
