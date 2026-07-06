@@ -15,31 +15,29 @@ def render_library_html():
     for doc in docs:
         rows.append(
             f"<tr>"
-            f"<td>{doc['filename']}</td>"
-            f"<td style='text-align:center'>{doc['page_count']}</td>"
-            f"<td style='text-align:center'>"
-            f"<button onclick=\"document.getElementById('delete-input').value='{doc['doc_id']}';"
-            f"document.getElementById('delete-input').dispatchEvent(new Event('input'));"
-            f"document.getElementById('delete-btn').click();\">"
-            f"Delete</button></td>"
+            f"<td style='padding:4px;'>{doc['filename']}</td>"
+            f"<td style='text-align:center; padding:4px;'>{doc['page_count']}</td>"
             f"</tr>"
         )
-    table = (
+    return (
         "<table style='width:100%; border-collapse:collapse; font-size:0.9em;'>"
         "<thead><tr>"
         "<th style='text-align:left; border-bottom:1px solid #ddd; padding:4px;'>File</th>"
         "<th style='text-align:center; border-bottom:1px solid #ddd; padding:4px;'>Pages</th>"
-        "<th style='text-align:center; border-bottom:1px solid #ddd; padding:4px;'></th>"
         "</tr></thead><tbody>"
         + "".join(rows)
         + "</tbody></table>"
     )
-    return table
+
+
+def get_delete_choices():
+    docs = list_documents()
+    return [(f"{d['filename']} ({d['page_count']} pp)", d["doc_id"]) for d in docs]
 
 
 def handle_upload(files):
     if not files:
-        return render_library_html(), "No files selected."
+        return render_library_html(), gr.update(choices=get_delete_choices()), "No files selected."
 
     results = []
     total_pages = 0
@@ -53,15 +51,15 @@ def handle_upload(files):
             results.append(f"  {file_path}: ERROR — {e}")
 
     summary = f"Ingested {total_pages} page(s) from {len(files)} file(s):\n"
-    return render_library_html(), summary + "\n".join(results)
+    return render_library_html(), gr.update(choices=get_delete_choices()), summary + "\n".join(results)
 
 
 def handle_delete(doc_id):
-    if not doc_id or not doc_id.strip():
-        return render_library_html(), ""
-    deleted = delete_document(doc_id.strip())
+    if not doc_id:
+        return render_library_html(), gr.update(choices=get_delete_choices(), value=None), ""
+    deleted = delete_document(doc_id)
     status = "Document deleted." if deleted else "Document not found."
-    return render_library_html(), status
+    return render_library_html(), gr.update(choices=get_delete_choices(), value=None), status
 
 
 def handle_message(query, history, chatbot_messages):
@@ -124,32 +122,30 @@ def build_app():
                     label="Upload documents",
                 )
                 upload_btn = gr.Button("Ingest Documents", variant="primary")
-                upload_status = gr.Textbox(label="Upload Status", interactive=False)
+                upload_status = gr.Textbox(label="Status", interactive=False)
 
-                delete_input = gr.Textbox(
-                    visible=False, elem_id="delete-input"
+                delete_dropdown = gr.Dropdown(
+                    choices=get_delete_choices(),
+                    label="Select document to delete",
+                    interactive=True,
                 )
-                delete_btn = gr.Button(
-                    "Delete", visible=False, elem_id="delete-btn"
-                )
-                delete_status = gr.Textbox(visible=False)
+                delete_btn = gr.Button("Delete Selected", variant="stop")
 
                 upload_btn.click(
                     handle_upload,
                     inputs=file_input,
-                    outputs=[library_html, upload_status],
+                    outputs=[library_html, delete_dropdown, upload_status],
                 )
                 delete_btn.click(
                     handle_delete,
-                    inputs=delete_input,
-                    outputs=[library_html, delete_status],
+                    inputs=delete_dropdown,
+                    outputs=[library_html, delete_dropdown, upload_status],
                 )
 
             with gr.Column(scale=3):
                 conversation_history = gr.State(value=[])
 
                 chatbot = gr.Chatbot(
-                    type="messages",
                     label="Chat",
                     height=500,
                 )
