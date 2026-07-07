@@ -1,5 +1,6 @@
 .claude/
 .specify/
+specs/
 
 __pycache__/
 *.pyc
